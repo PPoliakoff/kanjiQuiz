@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Display Text File</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: left;
+        margin-top: 50px;
+      }
+      .kanjiQuestion {
+        margin: 20px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        font-size: xx-large;
+        white-space: pre-wrap; /* Preserve whitespace and line breaks */
+      }
+
+      .buttonClass {
+        margin: 30px;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Kanji Quizz</h1>
+
+    <div class="kanjiQuestion" id="kanjiQuestion"></div>
+    <div class="input-container">
+      <input type="text" id="userInput" />
+      <button id="button_submit" onclick="AnswerQuiz()">Submit</button>
+    </div>
+    <button class="buttonClass" id="nextKanji" onclick="NextKanji()">
+      Next
+    </button>
+    <script>
+      class Kanji {
+        constructor(kanji, hiragana, translation) {
+          this.kanji = kanji;
+          this.hiragana = hiragana;
+          this.translation = translation;
+        }
+      }
+      const kanjiList = [];
+      let currentKanji = 0;
+      document.addEventListener("DOMContentLoaded", async function () {
+        const text = await loadFile();
+        NextKanji();
+      });
+
+      const input = document.getElementById("userInput");
+
+      input.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          document.getElementById("button_submit").click();
+        }
+      });
+
+      async function loadFile() {
+        const response = await fetch("/KanjiList.csv");
+        if (response.status != 200) {
+          throw new Error(`error ${response.status}`);
+        }
+        const filecontent = await response.text();
+        const lines = filecontent.split("\n");
+        lines.forEach((line) => {
+          tokens = line.split(",");
+          const kanji = new Kanji(tokens[0], tokens[1], tokens[2]);
+          kanjiList.push(kanji);
+        });
+      }
+
+      function NextKanji() {
+        document.getElementById("userInput").value = "";
+        document.getElementById("userInput").focus();
+        currentKanji = Math.floor(Math.random() * kanjiList.length);
+        displayKanji(kanjiList[currentKanji]);
+      }
+
+      function displayKanji(kanji) {
+        document.getElementById("kanjiQuestion").innerText = kanji.kanji;
+        document.getElementById("nextKanji").disabled = true;
+      }
+      function AnswerQuiz() {
+        const userInput = document.getElementById("userInput").value;
+        kanji = kanjiList[currentKanji];
+        if (userInput === kanji.hiragana) {
+          document.getElementById("nextKanji").disabled = false;
+          document.getElementById("nextKanji").focus();
+        }
+        document.getElementById(
+          "kanjiQuestion"
+        ).innerText = `${kanji.kanji} : ${kanji.hiragana} : ${kanji.translation}`;
+      }
+    </script>
+  </body>
+</html>
