@@ -59,7 +59,7 @@
       });
 
       async function loadFile() {
-        const response = await fetch("/KanjiList.csv");
+        const response = await fetch("./kanjiList.csv");
         if (response.status != 200) {
           throw new Error(`error ${response.status}`);
         }
